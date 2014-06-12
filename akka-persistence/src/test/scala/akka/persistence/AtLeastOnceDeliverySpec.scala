@@ -8,11 +8,11 @@ import scala.util.control.NoStackTrace
 import com.typesafe.config._
 import akka.actor._
 import akka.testkit._
-import akka.persistence.ReliableRedelivery.ReliableRedeliverySnapshot
-import akka.persistence.ReliableRedelivery.UnconfirmedWarning
-import akka.persistence.ReliableRedelivery.UnconfirmedWarning
+import akka.persistence.AtLeastOnceDelivery.AtLeastOnceDeliverySnapshot
+import akka.persistence.AtLeastOnceDelivery.UnconfirmedWarning
+import akka.persistence.AtLeastOnceDelivery.UnconfirmedWarning
 
-object ReliableRedeliverySpec {
+object AtLeastOnceDeliverySpec {
 
   case class Req(payload: String)
   case object ReqAck
@@ -26,7 +26,7 @@ object ReliableRedeliverySpec {
   case class ActionAck(id: Long)
   case object Boom
   case object SaveSnap
-  case class Snap(deliverySnapshot: ReliableRedeliverySnapshot) // typically includes some user data as well
+  case class Snap(deliverySnapshot: AtLeastOnceDeliverySnapshot) // typically includes some user data as well
 
   def senderProps(testActor: ActorRef, name: String,
                   redeliverInterval: FiniteDuration, warnAfterNumberOfUnconfirmedAttempts: Int,
@@ -38,7 +38,7 @@ object ReliableRedeliverySpec {
                override val redeliverInterval: FiniteDuration,
                override val warnAfterNumberOfUnconfirmedAttempts: Int,
                destinations: Map[String, ActorPath])
-    extends PersistentActor with ReliableRedelivery {
+    extends PersistentActor with AtLeastOnceDelivery {
 
     override def processorId: String = name
 
@@ -119,10 +119,10 @@ object ReliableRedeliverySpec {
 
 }
 
-abstract class ReliableRedeliverySpec(config: Config) extends AkkaSpec(config) with PersistenceSpec with ImplicitSender {
-  import ReliableRedeliverySpec._
+abstract class AtLeastOnceDeliverySpec(config: Config) extends AkkaSpec(config) with PersistenceSpec with ImplicitSender {
+  import AtLeastOnceDeliverySpec._
 
-  "ReliableRedelivery" must {
+  "AtLeastOnceDelivery" must {
     "deliver messages in order when nothing is lost" in {
       val probeA = TestProbe()
       val destinations = Map("A" -> system.actorOf(destinationProps(probeA.ref)).path)
@@ -273,6 +273,6 @@ abstract class ReliableRedeliverySpec(config: Config) extends AkkaSpec(config) w
   }
 }
 
-class LeveldbReliableRedeliverySpec extends ReliableRedeliverySpec(PersistenceSpec.config("leveldb", "ReliableRedeliverySpec"))
+class LeveldbAtLeastOnceDeliverySpec extends AtLeastOnceDeliverySpec(PersistenceSpec.config("leveldb", "AtLeastOnceDeliverySpec"))
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class InmemReliableRedeliverySpec extends ReliableRedeliverySpec(PersistenceSpec.config("inmem", "ReliableRedeliverySpec"))
+class InmemAtLeastOnceDeliverySpec extends AtLeastOnceDeliverySpec(PersistenceSpec.config("inmem", "AtLeastOnceDeliverySpec"))

@@ -10,10 +10,10 @@ import scala.concurrent.duration.FiniteDuration
 import akka.actor.Actor
 import akka.actor.ActorPath
 
-object ReliableRedelivery {
+object AtLeastOnceDelivery {
 
   @SerialVersionUID(1L)
-  case class ReliableRedeliverySnapshot(currentSeqNr: Long, unconfirmedDeliveries: immutable.Seq[UnconfirmedDelivery]) {
+  case class AtLeastOnceDeliverySnapshot(currentSeqNr: Long, unconfirmedDeliveries: immutable.Seq[UnconfirmedDelivery]) {
 
     // FIXME Java api
     // FIXME protobuf serialization
@@ -34,9 +34,9 @@ object ReliableRedelivery {
 
 }
 
-trait ReliableRedelivery extends PersistentActor {
-  import ReliableRedelivery._
-  import ReliableRedelivery.Internal._
+trait AtLeastOnceDelivery extends PersistentActor {
+  import AtLeastOnceDelivery._
+  import AtLeastOnceDelivery.Internal._
 
   /**
    * Interval between redelivery attempts.
@@ -52,7 +52,7 @@ trait ReliableRedelivery extends PersistentActor {
     Persistence(context.system).settings.atLeastOnceDelivery.redeliverInterval
 
   /**
-   * After this number of delivery attempts a [[ReliableRedelivery.UnconfirmedWarning]] message
+   * After this number of delivery attempts a [[AtLeastOnceDelivery.UnconfirmedWarning]] message
    * will be sent to `self`.
    *
    * The default value can be configured with the
@@ -68,7 +68,7 @@ trait ReliableRedelivery extends PersistentActor {
   /**
    * Maximum number of unconfirmed messages that this actor is allowed to hold in memory.
    * If this number is exceed [[#deliver]] will not accept more messages, i.e. it will throw a
-   * [[ReliableRedelivery.MaxUnconfirmedMessagesExceededException]].
+   * [[AtLeastOnceDelivery.MaxUnconfirmedMessagesExceededException]].
    *
    * The default value can be configured with the
    * `akka.persistence.at-least-once-delivery.max-unconfirmed-messages
@@ -144,11 +144,11 @@ trait ReliableRedelivery extends PersistentActor {
     unconfirmed = unconfirmed.updated(seqNr, d.copy(timestamp = timestamp, attempt = d.attempt + 1))
   }
 
-  def getDeliverySnapshot: ReliableRedeliverySnapshot =
-    ReliableRedeliverySnapshot(deliverySequenceNr,
+  def getDeliverySnapshot: AtLeastOnceDeliverySnapshot =
+    AtLeastOnceDeliverySnapshot(deliverySequenceNr,
       unconfirmed.map { case (seqNr, d) => UnconfirmedDelivery(seqNr, d.destination, d.msg) }(breakOut))
 
-  def setDeliverySnapshot(snapshot: ReliableRedeliverySnapshot): Unit = {
+  def setDeliverySnapshot(snapshot: AtLeastOnceDeliverySnapshot): Unit = {
     deliverySequenceNr = snapshot.currentSeqNr
     val now = System.nanoTime()
     unconfirmed = snapshot.unconfirmedDeliveries.map(d =>
