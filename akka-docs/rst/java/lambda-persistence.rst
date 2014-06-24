@@ -243,7 +243,7 @@ At-Least-Once Delivery
 ======================
 
 To send messages with at-least-once delivery semantics to destinations you can extend the ``AbstractPersistentActorWithAtLeastOnceDelivery``
-class instead of ``UntypedPersistentActor`` on the sending side.  It takes care of re-sending messages when they
+class instead of ``AbstractPersistentActor`` on the sending side.  It takes care of re-sending messages when they
 have not been confirmed within a configurable timeout.
 
 .. note::
@@ -282,7 +282,7 @@ sequence number. It does not store this state itself. You must persist events co
 ``deliver`` and ``confirmDelivery`` invocations from your ``PersistentActor`` so that the state can
 be restored by calling the same methods during the recovery phase of the ``PersistentActor``. Sometimes
 these events can be derived from other business level events, and sometimes you must create separate events.
-During recovery calls to ``confirmDelivery`` will not send out the message, but it will be sent later
+During recovery calls to ``delivery`` will not send out the message, but it will be sent later
 if no matching ``confirmDelivery`` was performed.
 
 Support for snapshots is provided by ``getDeliverySnapshot`` and ``setDeliverySnapshot``.

@@ -243,7 +243,7 @@ abstract class AtLeastOnceDeliverySpec(config: Config) extends AkkaSpec(config) 
       system.stop(snd)
     }
 
-    "re-deliver many lost messages" in {
+    "re-deliver many lost messages" in within(20.seconds) {
       val probeA = TestProbe()
       val probeB = TestProbe()
       val probeC = TestProbe()

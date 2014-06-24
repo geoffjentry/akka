@@ -90,7 +90,7 @@ object AtLeastOnceDelivery {
  * to the `deliver` and `confirmDelivery` invocations from your `PersistentActor` so that the
  * state can be restored by calling the same methods during the recovery phase of the
  * `PersistentActor`. Sometimes these events can be derived from other business level events,
- * and sometimes you must create separate events. During recovery calls to `confirmDelivery`
+ * and sometimes you must create separate events. During recovery calls to `delivery`
  * will not send out the message, but it will be sent later if no matching `confirmDelivery`
  * was performed.
  *
