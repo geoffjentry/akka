@@ -48,7 +48,7 @@ final class PersistenceSettings(config: Config) {
       config.getMillisDuration("at-least-once-delivery.redeliver-interval")
 
     val warnAfterNumberOfUnconfirmedAttempts: Int =
-      config.getInt("at-least-once-delivery.warn-after-number-Of-unconfirmed-attempts")
+      config.getInt("at-least-once-delivery.warn-after-number-of-unconfirmed-attempts")
 
     val maxUnconfirmedMessages: Int =
       config.getInt("at-least-once-delivery.max-unconfirmed-messages")

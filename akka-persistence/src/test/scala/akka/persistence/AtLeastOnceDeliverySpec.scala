@@ -44,7 +44,7 @@ object AtLeastOnceDeliverySpec {
 
     def updateState(evt: Evt): Unit = evt match {
       case AcceptedReq(payload, destination) ⇒
-        deliver(destination, seqNr => Action(seqNr, payload))
+        deliver(destination, deliveryId ⇒ Action(deliveryId, payload))
       case ReqDone(id) ⇒
         confirmDelivery(id)
     }
@@ -70,17 +70,17 @@ object AtLeastOnceDeliverySpec {
       case Boom ⇒
         throw new RuntimeException("boom") with NoStackTrace
 
-      case SaveSnap =>
+      case SaveSnap ⇒
         saveSnapshot(Snap(getDeliverySnapshot))
 
-      case w: UnconfirmedWarning =>
+      case w: UnconfirmedWarning ⇒
         testActor ! w
 
     }
 
     def receiveRecover: Receive = {
       case evt: Evt ⇒ updateState(evt)
-      case SnapshotOffer(_, Snap(deliverySnapshot)) =>
+      case SnapshotOffer(_, Snap(deliverySnapshot)) ⇒
         setDeliverySnapshot(deliverySnapshot)
 
     }
@@ -236,10 +236,10 @@ abstract class AtLeastOnceDeliverySpec(config: Config) extends AkkaSpec(config) 
       expectMsg(ReqAck)
       expectMsg(ReqAck)
       val unconfirmed = receiveWhile(3.seconds) {
-        case UnconfirmedWarning(unconfirmed) => unconfirmed
+        case UnconfirmedWarning(unconfirmed) ⇒ unconfirmed
       }.flatten
       unconfirmed.map(_.destination).toSet should be(Set(probeA.ref.path, probeB.ref.path))
-      unconfirmed.map(_.msg).toSet should be(Set(Action(1, "a-1"), Action(2, "b-1"), Action(3, "b-2")))
+      unconfirmed.map(_.message).toSet should be(Set(Action(1, "a-1"), Action(2, "b-1"), Action(3, "b-2")))
       system.stop(snd)
     }
 
